@@ -1,0 +1,15 @@
+# 依赖与构建产物说明
+node_modules/
+.shots/
+
+# 代理工作区与内部记录（不随代码发布）
+.workbuddy/
+
+# 系统文件
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# 本地环境
+.env
+.env.local
