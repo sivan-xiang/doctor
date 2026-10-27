@@ -7,9 +7,8 @@
   /* ================= 配置 ================= */
   var CONFIG = {
     hotWords: ['烫伤', '流鼻血', '异物卡喉', '发烧', '误服', '中暑'],
-    // 上线前替换为真实的第三方反馈表单地址；留空时降级为邮件反馈
+    // 第三方反馈表单地址（可选，如问卷/工单系统）；留空时不使用邮件，仅提供复制到剪贴板
     feedbackFormUrl: '',
-    feedbackEmail: 'feedback@example.com',
     // 第三方统计端点（可选）；也可在页面注入 window.plausible
     analyticsEndpoint: ''
   };
@@ -597,17 +596,14 @@
       return;
     }
 
-    var mail = 'mailto:' + CONFIG.feedbackEmail +
-      '?subject=' + encodeURIComponent('[家庭医药H5反馈] ' + type) +
-      '&body=' + encodeURIComponent(text);
+    // 未配置反馈表单时：仅生成内容并提供复制，用户可通过任意渠道发送
     var box = document.getElementById('feedback-result');
     if (box) {
       box.style.display = 'block';
       box.className = 'card result-box';
       box.innerHTML = '<b>反馈内容已生成</b>' +
-        '<p style="margin:6px 0 10px">可点击下方按钮通过邮件发送，或复制内容后通过任意渠道反馈。</p>' +
+        '<p style="margin:6px 0 10px">点击下方按钮复制内容，再通过微信 / 邮件等任意渠道发送给我们。</p>' +
         '<div style="display:flex;flex-wrap:wrap;gap:8px">' +
-          '<a class="chip-btn" href="' + mail + '">发送邮件</a>' +
           '<button class="chip-btn" data-action="copy-feedback">复制内容</button>' +
         '</div>';
     }
