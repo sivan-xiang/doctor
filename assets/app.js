@@ -17,7 +17,8 @@
   var STORE = {
     fav: 'fm_favorites_v1',
     kit: 'fm_kit_v1',
-    fs: 'fm_fontscale_v1'
+    fs: 'fm_fontscale_v1',
+    instHint: 'fm_inst_hint_v1'
   };
 
   /* ================= 数据 ================= */
@@ -218,7 +219,49 @@
     return c ? c.name : key;
   }
 
+  // 按优先级取前 N 个急救场景（priority 越小越紧急常用）
+  function topEmergency(n) {
+    return byCategory('emergency').slice().sort(function (a, b) {
+      return (a.priority != null ? a.priority : 99) - (b.priority != null ? b.priority : 99);
+    }).slice(0, n || 6);
+  }
+
+  // 首页状态条：收藏数 + 药箱临期/过期数（驱动回访）
+  function homeStatus() {
+    var f = getFavs().length;
+    var kit = getKit();
+    var expiring = kit.filter(function (it) {
+      var s = expiryStatus(it.expiry);
+      return s.cls === 'badge-danger' || s.cls === 'badge-warn';
+    }).length;
+    return '<div class="home-status">' +
+      '<a class="hs-item" href="#/favorites">' +
+        '<span class="hs-num">' + f + '</span><span class="hs-label">我的收藏</span></a>' +
+      '<a class="hs-item" href="#/kit">' +
+        '<span class="hs-num">' + kit.length + '</span>' +
+        '<span class="hs-label">家庭药箱' + (expiring ? ' · <b class="hs-warn">' + expiring + ' 临期</b>' : '') + '</span></a>' +
+      '</div>';
+  }
+
   /* ================= 页面：首页 ================= */
+  function installHint() {
+    if (localStorage.getItem(STORE.instHint) === '1') return '';
+    var installable = !!window.__fmInstallEvent;
+    return '<div class="install-hint" id="inst-hint">' +
+      '<div class="ih-icon">📲</div>' +
+      '<div class="ih-body">' +
+        '<b>添加到主屏幕，急救时离线也能打开</b>' +
+        (installable
+          ? '<p>点击「安装」即可常驻桌面，断网也能用。</p>'
+          : '<p>在浏览器菜单选择「添加到主屏幕 / 安装应用」，下次急救无需联网。</p>') +
+      '</div>' +
+      (installable
+        ? '<button class="ih-btn" data-action="install-now">安装</button>'
+        : '') +
+      '<button class="ih-close" data-action="install-dismiss" aria-label="关闭">×</button>' +
+      '</div>';
+  }
+
   function viewHome() {
     var em = byCategory('emergency');
     var daily = byCategory('daily-medicine');
@@ -235,8 +278,12 @@
           '<a class="call-btn" href="tel:120" data-action="call120">📞 立即拨打 120</a>' +
           '<p class="hero-note">若未自动跳转拨号，请手动拨打 120</p>' +
         '</section>' +
+        installHint() +
+        homeStatus() +
         '<a class="search-entry" href="#/search"><span>🔍 搜索症状 / 场景 / 药品</span><span class="chev">›</span></a>' +
-        section('紧急情况 · 快速处理', '', 
+        section('高频急救 · 先看这里', '最常发生的意外',
+          '<div class="scenario-grid em-grid">' + topEmergency(6).map(scenarioCard).join('') + '</div>') +
+        section('全部急救 · 快速处理', '',
           '<div class="scenario-grid">' + em.map(scenarioCard).join('') + '</div>', '#/category/emergency', em.length) +
         section('日常医药', '',
           '<div class="row-list">' + daily.slice(0, 4).map(rowCard).join('') + '</div>', '#/category/daily-medicine', daily.length) +
@@ -680,6 +727,57 @@
     toast('已清除本机数据');
   }
 
+  /* ================= 常驻紧急拨号 FAB ================= */
+  // FAB 挂在 body 上（不进 #app），重渲染时不会被销毁；首页隐藏（hero 已有 120），其余页面常驻。
+  function ensureFab() {
+    if (document.getElementById('em-fab')) return;
+    var wrap = document.createElement('div');
+    wrap.id = 'em-fab';
+    wrap.setAttribute('aria-hidden', 'false');
+    wrap.innerHTML =
+      '<div class="em-fab-menu" id="em-fab-menu">' +
+        '<a class="em-fab-item" href="tel:120" data-em="120"><span class="em-num">120</span><span class="em-cap">急救</span></a>' +
+        '<a class="em-fab-item" href="tel:110" data-em="110"><span class="em-num">110</span><span class="em-cap">报警</span></a>' +
+        '<a class="em-fab-item" href="tel:119" data-em="119"><span class="em-num">119</span><span class="em-cap">火警</span></a>' +
+      '</div>' +
+      '<button class="em-fab-btn" data-action="fab-toggle" aria-label="紧急拨号">📞</button>';
+    document.body.appendChild(wrap);
+
+    // 点击空白处收起菜单
+    document.addEventListener('click', function (ev) {
+      if (!wrap.contains(ev.target) && wrap.classList.contains('open')) {
+        wrap.classList.remove('open');
+      }
+    });
+  }
+
+  function setFabVisible(show) {
+    var fab = document.getElementById('em-fab');
+    if (fab) fab.style.display = show ? '' : 'none';
+    if (!show && fab) fab.classList.remove('open');
+  }
+
+  function closeFab() {
+    var fab = document.getElementById('em-fab');
+    if (fab) fab.classList.remove('open');
+  }
+
+  // 捕获 Android 原生安装提示，让首页引导出现真实「安装」按钮
+  window.addEventListener('beforeinstallprompt', function (e) {
+    e.preventDefault();
+    window.__fmInstallEvent = e;
+    var hint = document.getElementById('inst-hint');
+    if (hint && !hint.querySelector('.ih-btn')) {
+      var btn = document.createElement('button');
+      btn.className = 'ih-btn';
+      btn.setAttribute('data-action', 'install-now');
+      btn.textContent = '安装';
+      hint.insertBefore(btn, hint.querySelector('.ih-close'));
+      var p = hint.querySelector('p');
+      if (p) p.textContent = '点击「安装」即可常驻桌面，断网也能用。';
+    }
+  });
+
   /* ================= 事件委托 ================= */
   document.addEventListener('click', function (e) {
     var t = e.target;
@@ -693,6 +791,13 @@
       });
     }
 
+    // 常驻 FAB 里的拨号项（tel: 链接）
+    var emEl = t.closest('[data-em]');
+    if (emEl) {
+      track('call_em', { n: emEl.getAttribute('data-em'), from: currentPage });
+      closeFab();
+    }
+
     var el = t.closest('[data-action]');
     if (!el) return;
     var action = el.getAttribute('data-action');
@@ -702,6 +807,28 @@
         e.preventDefault();
         if (history.length > 1) history.back();
         else location.hash = '#/';
+        break;
+      case 'fab-toggle':
+        e.preventDefault();
+        var fab = document.getElementById('em-fab');
+        if (fab) fab.classList.toggle('open');
+        break;
+      case 'install-dismiss':
+        e.preventDefault();
+        try { localStorage.setItem(STORE.instHint, '1'); } catch (e2) { /* noop */ }
+        var hint = document.getElementById('inst-hint');
+        if (hint) hint.parentNode.removeChild(hint);
+        break;
+      case 'install-now':
+        e.preventDefault();
+        var evt = window.__fmInstallEvent;
+        if (evt && evt.prompt) {
+          evt.prompt().then(function () {
+            try { localStorage.setItem(STORE.instHint, '1'); } catch (e2) { /* noop */ }
+          }).catch(function () { /* 用户取消 */ });
+        } else {
+          toast('请使用浏览器菜单「添加到主屏幕」');
+        }
         break;
       case 'call120':
         track('call_120', { from: currentPage });
@@ -770,6 +897,8 @@
   function afterRender(page, r, opts) {
     applyFontScale();
     if (page === 'search') initSearch(r.params.q || '');
+    // 常驻 FAB：首页隐藏（hero 已含 120），其余页面常驻，便于随时拨号
+    setFabVisible(page !== 'home');
     if (opts.skipTrack) return;
     if (page === 'home') {
       track('page_view', { page: 'home' });
@@ -787,6 +916,7 @@
     var r = parseHash();
     var page = r.parts[0] || 'home';
     currentPage = page;
+    closeFab();
 
     var html = '';
     var active = '';
@@ -828,6 +958,8 @@
       return;
     }
     applyFontScale();
+    ensureFab();
+    setFabVisible(true); // 初始可能在非首页直接打开（如深链），先显示，render 后会按页面校正
     window.addEventListener('hashchange', function () { render(); });
     render();
   }

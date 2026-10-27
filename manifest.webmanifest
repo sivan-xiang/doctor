@@ -1,0 +1,19 @@
+{
+  "name": "家庭医药助手 · 日常医药与应急处理",
+  "short_name": "家庭医药",
+  "description": "家庭日常医药知识与应急处理指引，含急救步骤、家庭药箱与就医指引。可离线使用。",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#f3f6f6",
+  "theme_color": "#0e7c6b",
+  "icons": [
+    {
+      "src": "assets/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

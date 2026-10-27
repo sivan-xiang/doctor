@@ -642,6 +642,122 @@ input, textarea, select { font-family: inherit; }
   .scenario-grid { grid-template-columns: repeat(3, 1fr); }
 }
 
+/* ---------- 首页状态条 ---------- */
+.home-status {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin: 12px 0 2px;
+}
+.hs-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--card);
+  box-shadow: var(--shadow);
+}
+.hs-num { flex: none; min-width: 30px; text-align: center; font-size: 20px; font-weight: 700; color: var(--brand-d); }
+.hs-label { font-size: 13px; color: var(--muted); line-height: 1.35; }
+.hs-warn { color: var(--warn); font-weight: 700; }
+
+/* ---------- 安装引导 ---------- */
+.install-hint {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 14px 0 2px;
+  padding: 12px 38px 12px 14px;
+  border: 1px solid #cfeadd;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #eaf6f3 0%, #f7fbfa 100%);
+}
+.ih-icon { font-size: 22px; flex: none; }
+.ih-body { flex: 1; min-width: 0; }
+.ih-body b { font-size: 13.5px; color: var(--brand-d); }
+.ih-body p { margin: 2px 0 0; font-size: 12px; color: var(--muted); line-height: 1.5; }
+.ih-btn {
+  flex: none;
+  padding: 8px 16px;
+  border: none;
+  border-radius: 10px;
+  background: var(--brand);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+}
+.ih-close {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 26px;
+  height: 26px;
+  border: none;
+  background: transparent;
+  color: var(--muted);
+  font-size: 20px;
+  line-height: 1;
+}
+
+/* ---------- 常驻紧急拨号 FAB ---------- */
+.em-fab-menu {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  position: absolute;
+  right: 0;
+  bottom: calc(100% + 14px);
+  align-items: flex-end;
+  opacity: 0;
+  transform: translateY(8px);
+  pointer-events: none;
+  transition: opacity 0.18s ease, transform 0.18s ease;
+}
+.em-fab.open .em-fab-menu { opacity: 1; transform: translateY(0); pointer-events: auto; }
+.em-fab-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  border-radius: 14px;
+  background: #fff;
+  box-shadow: 0 6px 18px rgba(16, 42, 48, 0.18);
+  font-weight: 700;
+  color: var(--danger-d);
+}
+.em-fab-item .em-num {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: var(--danger);
+  color: #fff;
+  font-size: 15px;
+}
+.em-fab-item .em-cap { font-size: 14px; color: var(--text); }
+.em-fab-btn {
+  width: 56px;
+  height: 56px;
+  border: none;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #e4412f 0%, #b42318 100%);
+  color: #fff;
+  font-size: 26px;
+  line-height: 1;
+  box-shadow: 0 8px 22px rgba(185, 32, 22, 0.36);
+}
+.em-fab-btn:active { transform: scale(0.95); }
+#em-fab {
+  position: fixed;
+  right: 16px;
+  bottom: calc(var(--tabh) + env(safe-area-inset-bottom) + 16px);
+  z-index: 40;
+}
+
 @media (prefers-reduced-motion: reduce) {
   * { transition: none !important; animation: none !important; }
 }

@@ -7,6 +7,11 @@
 <meta name="description" content="家庭日常医药知识与应急处理指引：烫伤、出血、卡喉、中暑、误服等场景的步骤化处理，以及家庭药箱管理。内容仅用于健康科普，紧急情况请拨打 120。">
 <meta name="format-detection" content="telephone=no">
 <title>家庭医药助手 · 日常医药与应急处理</title>
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="家庭医药">
+<link rel="apple-touch-icon" href="assets/icon.svg">
 <link rel="icon" href="data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230e7c6b'/%3E%3Cpath d='M13 7h6v6h6v6h-6v6h-6v-6H7v-6h6z' fill='%23fff'/%3E%3C/svg%3E">
 <link rel="stylesheet" href="assets/styles.css">
 </head>
@@ -14,5 +19,13 @@
 <div id="app" aria-live="polite"></div>
 <script src="assets/content-data.js"></script>
 <script src="assets/app.js"></script>
+<script>
+  // 注册 Service Worker：使急救内容可离线打开（仅在非嵌入 iframe 时注册）
+  if ('serviceWorker' in navigator && window.self === window.top) {
+    window.addEventListener('load', function () {
+      navigator.serviceWorker.register('sw.js', { scope: './' }).catch(function () { /* 注册失败不影响正常使用 */ });
+    });
+  }
+</script>
 </body>
 </html>
