@@ -15,11 +15,21 @@ const CATEGORIES = [
   { key: 'emergency', name: '应急处理', desc: '分秒必争的急救场景', icon: '🆘' },
   { key: 'daily-medicine', name: '日常医药', desc: '常见不适的家庭护理', icon: '💊' },
   { key: 'medicine-kit', name: '家庭药箱', desc: '储存、清理与常备原则', icon: '🧰' },
+  { key: 'seek-care', name: '就医指引', desc: '何时就医、怎么准备、如何沟通', icon: '🏥' },
   { key: 'misconceptions', name: '常见误区', desc: '那些代代相传的错做法', icon: '🚫' },
 ];
 const CATEGORY_KEYS = CATEGORIES.map((c) => c.key);
 const STATUS_KEYS = ['draft', 'reviewed', 'published', 'archived'];
 const FORBIDDEN = ['确诊', '治愈', '替代就医', '保证有效', '包治', '立竿见影', '药到病除', '神药'];
+// 中文没有词边界，合法复合词会包含违规子串（如「明确诊断」含「确诊」、「精神类药品」含「神药」）。
+// 匹配前先剔除这些白名单短语，避免误报导致合规校验形同虚设。
+const ALLOWED_PHRASES = [
+  '明确诊断',
+  '初步诊断',
+  '鉴别诊断',
+  '精神类药品',
+  '神经类药物',
+];
 
 const ICONS = {
   burns: '🔥',
@@ -39,6 +49,28 @@ const ICONS = {
   'burns-toothpaste': '🙅',
   'fever-cover': '🙅',
   'wound-suck': '🙅',
+  drowning: '🏊',
+  'head-injury': '🤕',
+  'eye-chemical': '👁️',
+  fainting: '😵',
+  'bee-sting': '🐝',
+  headache: '🤯',
+  stomachache: '😖',
+  insomnia: '😴',
+  'menstrual-pain': '🌸',
+  eczema: '🧴',
+  'kit-list': '🧾',
+  topical: '🧴',
+  'travel-kit': '🎒',
+  'iv-drip': '💉',
+  'herbal-safe': '🌿',
+  'fever-diet': '🍲',
+  'when-emergency': '🚑',
+  'when-clinic': '🏥',
+  'before-visit': '📋',
+  'describe-symptoms': '🗣️',
+  'call-120': '📞',
+  'med-list': '💊',
 };
 
 const DEFAULT_DISCLAIMER =
@@ -240,8 +272,11 @@ for (const file of walk(CONTENT_DIR)) {
   const checkText = [fm.title, fm.summary, ...steps, ...donts, fm.when_to_seek_help, body]
     .filter(Boolean)
     .join(' ');
+  let scanText = checkText;
+  for (const phrase of ALLOWED_PHRASES) scanText = scanText.split(phrase).join('');
+
   for (const word of FORBIDDEN) {
-    if (checkText.includes(word)) errors.push(`${label}: 出现违规表述「${word}」`);
+    if (scanText.includes(word)) errors.push(`${label}: 出现违规表述「${word}」`);
   }
 
   if (fm.slug && fm.title) {

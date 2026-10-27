@@ -181,9 +181,10 @@
     }).join('') + '</nav>';
   }
 
-  function section(title, sub, inner, moreHref) {
+  function section(title, sub, inner, moreHref, count) {
     var right = moreHref
-      ? '<a class="sec-more" href="' + moreHref + '">全部 ›</a>'
+      ? '<a class="sec-more" href="' + moreHref + '">全部' +
+        (count ? ' ' + count + ' 篇' : '') + ' ›</a>'
       : (sub ? '<span>' + esc(sub) + '</span>' : '');
     return '<section class="section"><div class="section-head"><h2>' + esc(title) + '</h2>' +
       right + '</div>' + inner + '</section>';
@@ -222,6 +223,7 @@
     var em = byCategory('emergency');
     var daily = byCategory('daily-medicine');
     var kit = byCategory('medicine-kit');
+    var seek = byCategory('seek-care');
     var myth = byCategory('misconceptions');
 
     return topbar({ title: '家庭医药助手' }) +
@@ -235,13 +237,15 @@
         '</section>' +
         '<a class="search-entry" href="#/search"><span>🔍 搜索症状 / 场景 / 药品</span><span class="chev">›</span></a>' +
         section('紧急情况 · 快速处理', '', 
-          '<div class="scenario-grid">' + em.map(scenarioCard).join('') + '</div>', '#/category/emergency') +
+          '<div class="scenario-grid">' + em.map(scenarioCard).join('') + '</div>', '#/category/emergency', em.length) +
         section('日常医药', '',
-          '<div class="row-list">' + daily.map(rowCard).join('') + '</div>', '#/category/daily-medicine') +
+          '<div class="row-list">' + daily.slice(0, 4).map(rowCard).join('') + '</div>', '#/category/daily-medicine', daily.length) +
         section('家庭药箱', '',
-          '<div class="mini-grid">' + kit.map(miniCard).join('') + '</div>', '#/category/medicine-kit') +
+          '<div class="mini-grid">' + kit.map(miniCard).join('') + '</div>', '#/category/medicine-kit', kit.length) +
+        section('就医指引', '',
+          '<div class="mini-grid">' + seek.map(miniCard).join('') + '</div>', '#/category/seek-care', seek.length) +
         section('常见误区', '',
-          '<div class="mini-grid">' + myth.map(miniCard).join('') + '</div>', '#/category/misconceptions') +
+          '<div class="mini-grid">' + myth.map(miniCard).join('') + '</div>', '#/category/misconceptions', myth.length) +
         '<div class="disclaimer">本产品仅提供健康科普与应急处理指引，不构成诊断、处方或治疗建议，不替代医生、药师或 120。紧急情况请立即拨打 120。<br>' +
           '<a href="#/about" style="color:var(--brand)">查看完整免责声明与隐私说明 ›</a></div>' +
       '</main>';

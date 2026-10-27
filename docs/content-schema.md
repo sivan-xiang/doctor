@@ -10,6 +10,7 @@
   /emergency          急救场景
   /daily-medicine     日常医药
   /medicine-kit       家庭药箱
+  /seek-care          就医指引
   /misconceptions     常见误区
 ```
 
@@ -19,7 +20,7 @@
 | --- | --- | --- | --- |
 | title | 是 | string | ≤20 字 |
 | slug | 是 | string | 英文小写 + 短横线，全局唯一 |
-| category | 是 | enum | emergency / daily-medicine / medicine-kit / misconceptions |
+| category | 是 | enum | emergency / daily-medicine / medicine-kit / seek-care / misconceptions |
 | scenario | 是 | string | 场景名，如「烫伤」 |
 | summary | 是 | string | ≤40 字 |
 | priority | 否 | number | 首页排序，越小越靠前 |
